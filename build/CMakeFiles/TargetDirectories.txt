@@ -1,0 +1,11 @@
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/raytracer.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/mc3.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/mc2.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/rt3.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/rt4.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/rt5.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/rt6.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/rt7.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/rt_room.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/edit_cache.dir
+/Users/teohedelin/Skola/TNCG15_Globalen2/raytracer/build/CMakeFiles/rebuild_cache.dir
