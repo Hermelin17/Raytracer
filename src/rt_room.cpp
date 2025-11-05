@@ -9,6 +9,8 @@
 #include "color.h"
 #include <thread>
 #include <atomic>
+#include <iostream>
+
 
 
 static void build_hex_room(Scene& S){
@@ -53,30 +55,30 @@ static void build_hex_room(Scene& S){
 
 int main(){
     const int W = 600, H = 600;     // Lecture suggests ~800x800
-    const int spp = 256, ls = 64, depth = 5;
+    const int spp = 500, ls = 80, depth = 6;
 
     Camera cam;
     Scene scene;
     build_hex_room(scene);
     Material blueLambert { MatType::LAMBERT, Color(0.2, 0.2, 0.9) };
     Material greenLambert  { MatType::LAMBERT, Color(0.2, 0.9, 0.2) };
-    Material lamp { MatType::EMISSIVE, Color(0,0,0), Color(20,20,20) }; // Le = (1,1,1)
+    Material lamp { MatType::EMISSIVE, Color(0,0,0), Color(0.1,0.1,0.1) }; // Le = (1,1,1)
+    Material red{ MatType::LAMBERT, Color(0.9,0.2,0.2) };
+    Material mirror { MatType::MIRROR, Color(0,0,0) };
     scene.rects[0].mat = greenLambert;   // right wall (y=+6)
     scene.rects[3].mat = blueLambert;  // left wall  (y=-6)
-
-    // Optional: put a test sphere in the room
-    Material red{ MatType::LAMBERT, Color(0.9,0.2,0.2) };
+    scene.rects[1].mat = mirror;  // left wall  (y=-6)
+   
+    //Spheres
     scene.spheres.emplace_back(Vec3(5.0, 0.0, -3), 0.8, red);
-
-    Material mirror { MatType::MIRROR, Color(0,0,0) };
     scene.spheres.emplace_back(Vec3(5.0, 2, -3), 0.65, mirror);
 
     // Roof area light at z=+5 facing downward (same 4x4 as before, centered near x~4,y~0)
     Vec3 v0 = Vec3(2,-2,5), e1 = Vec3(0,4,0), e2 = Vec3(4,0,0), nL = Vec3(0,0,-1);
-    scene.lights.emplace_back(v0, e1, e2, nL, Color(2,2,2));
+    scene.lights.emplace_back(v0, e1, e2, nL, Color(1,1,1));
 
     {
-    Vec3 v0g = Vec3(2, -2, 4.9);   // corner
+    Vec3 v0g = Vec3(2, -2, 5);   // corner
     Vec3 e1g = Vec3(0, 4, 0);      // along +y
     Vec3 e2g = Vec3(4, 0, 0);      // along +x
     Scene::RectGeom lampRect{ Rectangle(v0g, e1g, e2g), lamp };
@@ -121,10 +123,48 @@ int main(){
         }
     };
 
-        // spawn threads
+    // spawn threads
     std::vector<std::thread> pool;
-    for (int t=0; t<num_threads; ++t) pool.emplace_back(worker, 1234u + t*1337u);
-    for (auto& th : pool) th.join();
+    for (int t = 0; t < num_threads; ++t)
+        pool.emplace_back(worker, 1234u + t * 1337u);
+
+    // --- progress monitor (main thread) ---
+    auto start = std::chrono::steady_clock::now();
+    int total_rows = H;
+    while (true) {
+        int done = next_row.load();
+        double progress = double(done) / total_rows;
+        if (progress > 0.0) {
+            auto now = std::chrono::steady_clock::now();
+            double elapsed = std::chrono::duration<double>(now - start).count();
+            double eta = elapsed * (1.0 / progress - 1.0);
+            if(eta > 60)
+            {
+                eta /= 60;
+                std::cerr << "\rRendering: "
+                << int(progress * 100) << "% | elapsed "
+                << int(elapsed) << "s | ETA "
+                << int(eta) << " min" << std::flush;
+            }
+            else
+            {
+            std::cerr << "\rRendering: "
+                << int(progress * 100) << "% | elapsed "
+                << int(elapsed) << "s | ETA "
+                << int(eta) << "s   " << std::flush;
+            }
+
+        }
+        if (done >= total_rows) break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    }
+
+    // Wait for all threads to finish
+    for (auto &th : pool) th.join();
+
+    std::cerr << "\nRender finished in "
+        << std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count()
+        << " s\n";
 
     // write PPM once
     std::ofstream out("room.ppm", std::ios::binary);
