@@ -48,7 +48,7 @@ static void build_hex_room(Scene& S){
     add_floor_rect(-5, floorLambert);
     add_floor_tris(-5, floorLambert);
     add_floor_rect(+5, roofLambert);
-    add_floor_tris(+5, roofLambert);
+    add_floor_tris(+5, roofLambert); 
 }
 
 int main(){
