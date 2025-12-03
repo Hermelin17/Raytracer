@@ -18,6 +18,8 @@ static void build_hex_room(Scene& S){
     Material wallLambert { MatType::LAMBERT, Color(0.7,0.7,0.7) };
     Material floorLambert{ MatType::LAMBERT, Color(0.7,0.7,0.7) };
     Material roofLambert { MatType::LAMBERT, Color(0.7,0.7,0.7) };
+    
+    
 
     // XY vertices (closed polygon)
     Vec3 P[6] = { Vec3(0, 6, 0), Vec3(10, 6, 0), Vec3(13, 0, 0),
@@ -54,17 +56,19 @@ static void build_hex_room(Scene& S){
 }
 
 int main(){
-    const int W = 600, H = 600;     // Lecture suggests ~800x800
-    const int spp = 500, ls = 80, depth = 6;
+    const int W =400, H = 400;     // Lecture suggests ~800x800
+    const int spp = 20, ls = 10, depth = 20;
 
     Camera cam;
     Scene scene;
     build_hex_room(scene);
-    Material blueLambert { MatType::LAMBERT, Color(0.2, 0.2, 0.9) };
-    Material greenLambert  { MatType::LAMBERT, Color(0.2, 0.9, 0.2) };
-    Material lamp { MatType::EMISSIVE, Color(0,0,0), Color(0.1,0.1,0.1) }; // Le = (1,1,1)
+
+    Material lamp { MatType::EMISSIVE, Color(0,0,0), Color(1.5,1.5,1.5) }; // Le = (1,1,1)
     Material red{ MatType::LAMBERT, Color(0.9,0.2,0.2) };
     Material mirror { MatType::MIRROR, Color(0,0,0) };
+    Material blueLambert { MatType::LAMBERT, Color(0.2, 0.2, 0.9) };
+    Material greenLambert  { MatType::LAMBERT, Color(0.2, 0.9, 0.2) };
+
     scene.rects[0].mat = greenLambert;   // right wall (y=+6)
     scene.rects[3].mat = blueLambert;  // left wall  (y=-6)
     scene.rects[1].mat = mirror;  // left wall  (y=-6)
@@ -75,15 +79,30 @@ int main(){
 
     // Roof area light at z=+5 facing downward (same 4x4 as before, centered near x~4,y~0)
     Vec3 v0 = Vec3(2,-2,5), e1 = Vec3(0,4,0), e2 = Vec3(4,0,0), nL = Vec3(0,0,-1);
-    scene.lights.emplace_back(v0, e1, e2, nL, Color(1,1,1));
+    scene.lights.emplace_back(v0, e1, e2, nL, Color(1.3,1.3,1.3));
 
     {
-    Vec3 v0g = Vec3(2, -2, 5);   // corner
+    Vec3 v0g = Vec3(2, -2, 4.9);   // corner
     Vec3 e1g = Vec3(0, 4, 0);      // along +y
     Vec3 e2g = Vec3(4, 0, 0);      // along +x
     Scene::RectGeom lampRect{ Rectangle(v0g, e1g, e2g), lamp };
     scene.rects.push_back(lampRect);
     }
+
+    // --- Add a small tetrahedron (polygonal object) ---
+    Material yellowPoly{ MatType::LAMBERT, Color(0.9,0.9,0.2) };
+
+    // vertices (centered near x≈4.3, y≈-1.0, z≈-2.3)
+    Vec3 A(5.3, -3, -4);
+    Vec3 B(5.6, -1.5, -4);
+    Vec3 C(5.3, -3, 0.3);
+    Vec3 D(5.3, -2.2, -4);
+
+    // 4 faces (triangles)
+    scene.tris.push_back({ Triangle(A, B, C), yellowPoly });
+    scene.tris.push_back({ Triangle(A, C, D), yellowPoly });
+    scene.tris.push_back({ Triangle(A, D, B), yellowPoly });
+    scene.tris.push_back({ Triangle(B, D, C), yellowPoly });
 
     // std::ofstream out("room.ppm", std::ios::binary);
     // out << "P6\n" << W << " " << H << "\n255\n";
